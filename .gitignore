@@ -1,0 +1,8 @@
+data/
+reports/**/*.csv
+reports/**/*.json
+reports/**/*.html
+!reports/**/*.png
+__pycache__/
+.venv/
+*.egg-info/
