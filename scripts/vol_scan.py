@@ -53,7 +53,7 @@ def main():
                 by = gap.assign(bucket=pd.cut(gap["abs_delta"], [0, 0.15, 0.35, 0.65, 1.0], labels=["wing", "25d", "atm", "itm"]))
                 g = by.groupby(["bucket", "type"], observed=True).agg(n=("gap_vol_pts", "size"), gap_median=("gap_vol_pts", "median"),
                                                                        gap_p90=("gap_vol_pts", lambda x: x.quantile(0.9)),
-                                                                       oi_derive_usd=("oi_derive", "sum"))
+                                                                       oi_derive_contracts=("oi_derive", "sum"))
                 md += [f"## {ccy} Derive minus Deribit, vol points, {len(gap)} matched options", g.round(2).to_string(),
                        f"Derive total OI (contracts): {drv['open_interest'].sum():,.1f}; Deribit: {der['open_interest'].sum():,.0f}", ""]
                 print(f"{ccy}: {len(gap)} matched; median gap {gap['gap_vol_pts'].median():+.2f} vol pts")

@@ -1,18 +1,19 @@
-"""Derive (formerly Lyra) on-chain options: live instruments and per-instrument tickers (mark IV,
-open interest, best bid/ask). Public endpoints, no key.
+"""Derive (formerly Lyra) on-chain options: live instruments and tickers (mark IV, bid/ask IV,
+open interest, delta). Public v3 endpoints, no key.
 
     python -m vr.derive book --currency BTC ETH
 
-Endpoints (v2 API, https://docs.derive.xyz): POST /public/get_instruments, POST /public/get_ticker.
-If the API has moved, the two functions below are the only things to change; the scan reads the
-CSV this writes: data/processed/derive/book_<CCY>_<date>T<hour>.csv with the same columns as the
+Endpoints (https://docs.derive.xyz, base https://api.derive.xyz/v3): POST public/get_all_instruments
+(paginated) and POST public/get_tickers (one call per expiry; ticker fields are abbreviated:
+option_pricing.i = mark IV as a fraction, bi/ai = bid/ask IV, d = delta, f = forward; stats.oi =
+open interest; I = index price). The private/* history endpoints need a signed wallet and are not
+used. Writes data/processed/derive/book_<CCY>_<date>T<hour>.csv with the same columns as the
 Deribit book so the two can be joined on (expiry, strike, type).
 """
 from __future__ import annotations
 
 import argparse
 import time
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,7 +22,7 @@ import requests
 
 from vr.store import ROOT
 
-API = "https://api.lyra.finance"
+API = "https://api.derive.xyz/v3"
 _S = requests.Session()
 
 
@@ -44,35 +45,51 @@ def _post(path: str, body: dict, pause: float = 0.05):
 
 
 def instruments(currency: str) -> pd.DataFrame:
-    res = _post("public/get_instruments", {"currency": currency, "instrument_type": "option", "expired": False})
+    rows, page = [], 1
+    while True:
+        res = _post("public/get_all_instruments", {"currency": currency, "instrument_type": "option",
+                                                   "expired": False, "page": page})
+        for i in res["instruments"]:
+            if not i.get("is_active"):
+                continue
+            od = i["option_details"]
+            rows.append({"instrument_name": i["instrument_name"],
+                         "expiry": pd.to_datetime(int(od["expiry"]), unit="s", utc=True),
+                         "strike": float(od["strike"]), "type": "call" if od["option_type"] == "C" else "put"})
+        if page >= res["pagination"]["num_pages"]:
+            return pd.DataFrame(rows)
+        page += 1
+
+
+def _f(x) -> float:
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return float("nan")
+
+
+def tickers(currency: str, expiry_date: str) -> pd.DataFrame:
+    """All option tickers for one expiry (expiry_date as YYYYMMDD)."""
+    res = _post("public/get_tickers", {"currency": currency, "instrument_type": "option", "expiry_date": expiry_date})
     rows = []
-    for i in res:
-        od = i.get("option_details", {})
-        rows.append({"instrument_name": i["instrument_name"],
-                     "expiry": pd.to_datetime(int(od.get("expiry", 0)), unit="s", utc=True),
-                     "strike": float(od.get("strike", "nan")), "type": "call" if od.get("option_type") == "C" else "put"})
+    for name, t in res["tickers"].items():
+        op, st = t.get("option_pricing") or {}, t.get("stats") or {}
+        rows.append({"instrument_name": name, "mark_iv": _f(op.get("i")) * 100, "bid_iv": _f(op.get("bi")) * 100,
+                     "ask_iv": _f(op.get("ai")) * 100, "delta": _f(op.get("d")), "forward": _f(op.get("f")),
+                     "mark_price": _f(t.get("M")), "bid_price": _f(t.get("b")), "ask_price": _f(t.get("a")),
+                     "open_interest": _f(st.get("oi")), "volume": _f(st.get("v")), "underlying_price": _f(t.get("I"))})
     return pd.DataFrame(rows)
 
 
-def ticker(instrument_name: str) -> dict:
-    t = _post("public/get_ticker", {"instrument_name": instrument_name})
-    op = t.get("option_pricing", {}) or {}
-    return {"instrument_name": instrument_name, "mark_iv": float(op.get("iv", "nan")) * 100,   # Derive reports iv as a fraction
-            "mark_price": float(t.get("mark_price", "nan")), "bid_price": float(t.get("best_bid_price", "nan") or "nan"),
-            "ask_price": float(t.get("best_ask_price", "nan") or "nan"), "open_interest": float(t.get("open_interest", "nan") or "nan"),
-            "underlying_price": float(t.get("index_price", "nan") or "nan"), "delta": float(op.get("delta", "nan") or "nan")}
-
-
-def book(currency: str, max_instruments: int = 400, workers: int = 8) -> pd.DataFrame:
+def book(currency: str) -> pd.DataFrame:
     inst = instruments(currency)
     if inst.empty:
         return inst
     now = pd.Timestamp.now(tz="UTC")
     inst["tenor_days"] = (inst["expiry"] - now).dt.total_seconds() / 86400
-    inst = inst.sort_values(["expiry", "strike"]).head(max_instruments)
-    with ThreadPoolExecutor(workers) as ex:
-        ticks = list(ex.map(ticker, inst["instrument_name"]))
-    df = inst.merge(pd.DataFrame(ticks), on="instrument_name", how="left")
+    days = sorted(inst["instrument_name"].str.split("-").str[1].unique())
+    ticks = pd.concat([tickers(currency, d) for d in days], ignore_index=True)
+    df = inst.merge(ticks, on="instrument_name", how="left").sort_values(["expiry", "strike", "type"])
     df["snapshot_ts"] = now
     return df
 
