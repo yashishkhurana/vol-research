@@ -62,7 +62,7 @@ Nov 2022 was one of the best months to sell: implied jumped on FTX and realised 
 | ETH 2025 | −3.7 | −3.2 | −0.4 | +1.7 |
 | ETH 2026 | +1.5 | +6.2 | +11.1 | +10.3 |
 
-On BTC the premium rises with tenor in every year. On ETH it does not. 365 days cannot be measured from listed options: the longest traded Deribit expiry is a median 320 days out, and two-year vol is not listed. A 270-day window since 2023 gives about four non-overlapping samples, all in one period of falling BTC vol.
+On BTC the premium rises from 30 to 180 days in every year; from 180 to 270 it rises in 2024 and 2025 and is flat in 2023 and 2026. Over the whole period ETH's is small and not monotone, but 2026 alone looks like BTC (+1.5 at 30 days, +11.1 at 180). 365 days cannot be measured from listed options: the longest traded Deribit expiry is a median 320 days out, and two-year vol is not listed. A 270-day window since 2023 gives about four non-overlapping samples. BTC realised vol over the next 270 days stayed at 42–51 throughout; what moved was implied (270-day ATM averaged 64 in 2024, 45 in 2026).
 
 ![term](../reports/vrp/term.png)
 
