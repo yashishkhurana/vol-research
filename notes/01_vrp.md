@@ -37,11 +37,40 @@ Nov 2022 was one of the best months to sell: implied jumped on FTX and realised 
 
 ![vrp](../reports/vrp/vrp.png)
 
+## By tenor: is vol more expensive further out?
+*Added 2026-10-25, from daily option prices.* DVOL covers only 30 days, so the premium at longer tenors is rebuilt from every traded Deribit option, Jan 2023 – Oct 2026 (2,810 per-expiry files from CryptoDataDownload; they match Deribit's own daily candles, 08:00 to 08:00 UTC, exactly). Option price × forward (the matching dated future, else the perpetual times the futures-curve basis) gives a USD price; Black-76 at zero rates gives the implied vol. Kept: options that traded that day, 2+ days to expiry, |delta| 0.2–0.8. ATM vol per expiry by interpolating at the forward; constant-maturity ATM by interpolating total variance between the two bracketing expiries, no extrapolation (`vr/term.py`, `scripts/run_term_vrp.py`). The rebuilt 30-day ATM tracks DVOL with correlation 0.989 (BTC) and 0.986 (ETH); DVOL sits 2.0 and 2.6 points higher, as it includes the wings.
+
+| | Tenor | Mean ATM IV | Mean realised next | Mean VRP | Median | Days positive | Independent windows |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| BTC | 30d | 47.2 | 44.7 | +2.5 | +3.9 | 66% | 45.5 |
+| BTC | 90d | 50.6 | 45.3 | +5.3 | +4.4 | 75% | 14.6 |
+| BTC | 180d | 53.9 | 45.6 | +8.3 | +8.1 | 85% | 6.8 |
+| BTC | 270d | 55.7 | 46.2 | +9.5 | +9.0 | 92% | 4.2 |
+| ETH | 30d | 58.8 | 59.1 | −0.3 | +0.7 | 53% | 45.5 |
+| ETH | 90d | 61.1 | 60.0 | +1.1 | +2.2 | 59% | 14.6 |
+| ETH | 180d | 63.4 | 60.8 | +2.6 | +1.7 | 59% | 6.8 |
+| ETH | 270d | 64.4 | 62.0 | +2.4 | +0.6 | 54% | 4.0 |
+
+| Mean VRP by year | 30d | 90d | 180d | 270d |
+| --- | --- | --- | --- | --- |
+| BTC 2023 | +3.4 | +6.5 | +8.5 | +8.5 |
+| BTC 2024 | +4.6 | +7.1 | +10.3 | +13.1 |
+| BTC 2025 | +2.0 | +4.4 | +6.9 | +7.5 |
+| BTC 2026 | −1.0 | +2.0 | +5.7 | +5.8 |
+| ETH 2023 | +1.3 | +4.0 | +4.7 | +3.9 |
+| ETH 2024 | +0.3 | −0.5 | +0.2 | +0.5 |
+| ETH 2025 | −3.7 | −3.2 | −0.4 | +1.7 |
+| ETH 2026 | +1.5 | +6.2 | +11.1 | +10.3 |
+
+On BTC the premium rises with tenor in every year. On ETH it does not. 365 days cannot be measured from listed options: the longest traded Deribit expiry is a median 320 days out, and two-year vol is not listed. A 270-day window since 2023 gives about four non-overlapping samples, all in one period of falling BTC vol.
+
+![term](../reports/vrp/term.png)
+
 ## What it means
 [Yashish's sentence.]
 
 ## Limits
-- 30-day only. Longer tenors are not in DVOL; today's term structure is in `02_surface.md`, as a snapshot.
+- DVOL is 30-day only; the tenor section is ATM only (no skew, no wings) and starts in 2023.
 - 2,015 daily observations of overlapping 30-day windows are about 67 independent ones.
 - DVOL is an index. No fees, no hedging cost, no path: this is the premium, not a strategy's return.
 - Realised vol from hourly closes reads slightly differently from daily closes.
