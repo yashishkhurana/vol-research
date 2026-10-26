@@ -2,7 +2,7 @@
 
 *Second note. One snapshot, 25 Oct 2026, 09:41 UTC. Not a backtest.*
 
-**Result:** [YASHISH]
+**Result:** both curves slope up and puts are richer than calls at the front. Derive's marks sit within 0.1 vol point of Deribit's, so there's no gap to trade. Derive's ETH open interest is mostly far-out-of-the-money 2027 calls: $593m notional, about $5m of actual premium. BTC's largest are 90–100k calls.
 
 ## Data
 - Deribit: every live BTC and ETH option, `public/get_book_summary_by_currency` (`vr/deribit.py`). BTC 920 options, ETH 782, 12 expiries each.
@@ -37,7 +37,7 @@ Derive's marks sit within about 0.1 vol point of Deribit's, and its quotes strad
 
 Notional is not premium. At Derive's marks the whole book is worth $18.3m on BTC and $15.2m on ETH. The two ETH March 2027 calls are marked at $14.7 (5,000 strike, delta 0.045) and $5.2 (7,000, delta 0.016): about $1.6m of premium behind the $390m.
 
-[YASHISH: what it means]
+Nothing is mispriced between the two venues. What an on-chain maker gets is the spread, about a vol point each side, and the flow, which from the open interest looks like buyers of cheap 2027 calls. Not much premium in it, but it's the kind of buyer you want on the other side.
 
 ## Limits
 - One snapshot; the two venues were read within 15 seconds of each other.

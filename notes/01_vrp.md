@@ -67,7 +67,7 @@ On BTC the premium rises from 30 to 180 days in every year; from 180 to 270 it r
 ![term](../reports/vrp/term.png)
 
 ## What it means
-[Yashish's sentence.]
+Selling 30-day vol on BTC paid 16 points in 2021 and about 1 point this year. The money is now in longer tenors: 8 to 9.5 points at 6 to 9 months since 2023, 6 to 7.5 in 2025–26. It is shrinking there too, because implied fell, not because the market got calmer. At the money, ETH paid close to nothing in 2024 and 2025. When it loses, it loses in a couple of bad months.
 
 ## Limits
 - DVOL is 30-day only; the tenor section is ATM only (no skew, no wings) and starts in 2023.
