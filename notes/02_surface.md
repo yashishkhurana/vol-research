@@ -1,6 +1,6 @@
 # Today's surface: Deribit term structure and skew, and Derive against Deribit
 
-*Second note. One snapshot, 25 Oct 2026, 09:34–09:47 UTC. Not a backtest.*
+*Second note. One snapshot, 25 Oct 2026, 09:41 UTC. Not a backtest.*
 
 **Result:** [YASHISH]
 
@@ -13,10 +13,10 @@
 
 | | BTC | ETH |
 | --- | --- | --- |
-| Spot | $80,488 | $2,329 |
-| ATM vol, 1–5 days | 34% | 48–51% |
+| 1-day forward | $80,165 | $2,324 |
+| ATM vol, 1–5 days | 33–35% | 47–51% |
 | ATM vol, 5–11 months | 38–39% | 52–54% |
-| 25-delta skew, front | 4–5 points | 7–9 points |
+| 25-delta skew, 1–5 days | 3–5 points | 7–9 points |
 | 25-delta skew, 11 months | 1.8 | −0.2 |
 
 Both curves slope up. Puts are richer than calls at the front, flattening out the curve; ETH's front skew is twice BTC's and turns slightly to calls at 11 months. Open interest sits in two expiries: 30 Oct and 25 Dec, about $11bn each on BTC.
@@ -27,18 +27,20 @@ Both curves slope up. Puts are richer than calls at the front, flattening out th
 | --- | --- | --- |
 | Matched options | 496 | 570 |
 | Median mark-vol gap, Derive − Deribit | −0.12 | −0.07 |
-| Derive options with a bid and an ask | 255 | 270 |
+| Matched options with a Derive bid and ask | 255 | 270 |
 | Median Derive half-spread | 1.1 vol pts | 1.1 vol pts |
 | Derive bid above Deribit mark | 5 | 4 |
 | Derive ask below Deribit mark | 5 | 3 |
 | Derive open interest, notional | $756m | $818m |
 
-Derive's marks sit within about 0.1 vol point of Deribit's, and its quotes straddle Deribit's mark on all but about ten options per coin. Its open interest is mostly out-of-the-money calls: on ETH, March 2027 calls at 5,000 and 7,000 (spot 2,330) hold about $390m; on BTC the largest are 90–100k calls.
+Derive's marks sit within about 0.1 vol point of Deribit's, and its quotes straddle Deribit's mark on all but about ten options per coin. Its open interest is mostly out-of-the-money calls: on ETH, March 2027 calls at 5,000 and 7,000 (forward 2,366) hold about $390m of notional; on BTC the largest are 90–100k calls.
+
+Notional is not premium. At Derive's marks the whole book is worth $18.3m on BTC and $15.2m on ETH. The two ETH March 2027 calls are marked at $14.7 (5,000 strike, delta 0.045) and $5.2 (7,000, delta 0.016): about $1.6m of premium behind the $390m.
 
 [YASHISH: what it means]
 
 ## Limits
-- One snapshot; the two venues were read about ten minutes apart.
+- One snapshot; the two venues were read within 15 seconds of each other.
 - Mark vols, not fills. Open interest shows where positions sit, not who opened them.
 
 ## Reproduce

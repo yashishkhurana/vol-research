@@ -40,7 +40,7 @@ def main():
         if der is None:
             print(f"{ccy}: no Deribit book"); continue
         s_der = surface_summary(der); s_der.to_csv(OUT / f"surface_{ccy}_deribit.csv", index=False)
-        md += [f"## {ccy} Deribit, {der['snapshot_ts'].iloc[0]:%Y-%m-%d %H:%M} UTC, spot {der['underlying_price'].median():,.0f}",
+        md += [f"## {ccy} Deribit, {der['snapshot_ts'].iloc[0]:%Y-%m-%d %H:%M} UTC, 1-day forward {der.loc[der['tenor_days'].idxmin(), 'underlying_price']:,.0f}",
                s_der.round(1).to_string(index=False), ""]
         ax = axes[i]; ax.plot(s_der["tenor_days"], s_der["atm_iv"], marker="o", ms=3, label="Deribit ATM")
         ax.plot(s_der["tenor_days"], s_der["iv_25d_put"], marker=".", ms=3, lw=0.8, label="Deribit 25d put")
